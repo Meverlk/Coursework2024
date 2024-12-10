@@ -6,4 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(Server main.cpp
         InvertedIndex/HashNode.h
         InvertedIndex/HashTable.cpp
-        InvertedIndex/HashTable.h)
+        InvertedIndex/HashTable.h
+        InvertedIndex/ThreadSafeHashTable.cpp
+        InvertedIndex/ThreadSafeHashTable.h)
