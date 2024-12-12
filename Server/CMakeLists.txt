@@ -8,4 +8,7 @@ add_executable(Server main.cpp
         InvertedIndex/HashTable.cpp
         InvertedIndex/HashTable.h
         InvertedIndex/ThreadSafeHashTable.cpp
-        InvertedIndex/ThreadSafeHashTable.h)
+        InvertedIndex/ThreadSafeHashTable.h
+        InvertedIndex/Database/Document.h
+        InvertedIndex/Database/Database.cpp
+        InvertedIndex/Database/Database.h)
