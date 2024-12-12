@@ -53,6 +53,11 @@ public:
         }
         return false;
     }
+
+    std::vector<Document> getAllDocuments() const {
+        std::lock_guard lock(mutex);
+        return documents;
+    }
 };
 
 

@@ -5,7 +5,6 @@
 #ifndef THREADSAFEHASHTABLE_H
 #define THREADSAFEHASHTABLE_H
 
-#include <cstdio>
 #include <mutex>
 #include <shared_mutex>
 #include "HashTable.h"
@@ -44,6 +43,19 @@ public:
         return table.find(key, value);
     }
 
+    std::vector<std::pair<Key, Value>> getTable() const {
+        readLock lock(rwLock);
+
+        std::vector<std::pair<Key, Value>> result;
+        for (size_t i = 0; i < table.getCapacity(); ++i) {
+            HashNode<Key, Value>* node = table.get(i);
+            while (node) {
+                result.emplace_back(node->getKey(), node->getValue());
+                node = node->getNext();
+            }
+        }
+        return result;
+    }
 };
 
 
