@@ -13,4 +13,6 @@ add_executable(Server main.cpp
         InvertedIndex/Database/Database.cpp
         InvertedIndex/Database/Database.h
         InvertedIndex/InvertedIndex.cpp
-        InvertedIndex/InvertedIndex.h)
+        InvertedIndex/InvertedIndex.h
+        ThreadPool/TaskQueue.cpp
+        ThreadPool/TaskQueue.h)
