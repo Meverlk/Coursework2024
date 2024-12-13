@@ -10,7 +10,7 @@
 #include <vector>
 #include <mutex>
 #include <sstream>
-#include <bits/fs_dir.h>
+#include <filesystem>
 
 #include "Document.h"
 
@@ -28,7 +28,7 @@ public:
     }
 
     void addDocumentsFromDirectory(const std::string& directory) {
-        for (const auto& entry : std::filesystem::__cxx11::directory_iterator(directory)) {
+        for (const auto& entry : std::filesystem::directory_iterator(directory)) {
             if (entry.is_regular_file() && entry.path().extension() == ".txt") {
                 std::ifstream file(entry.path());
                 if (!file.is_open()) {

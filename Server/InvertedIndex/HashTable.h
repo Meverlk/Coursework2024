@@ -15,13 +15,33 @@ private:
     std::vector<HashNode<Key, Value> *> table;
     size_t capacity;
     size_t size;
+    double load_factor;
 
     size_t hashFunction(const Key& key) const {
         return std::hash<Key>{}(key) % capacity;
     }
 
+    void rehash() {
+        capacity *= 2;
+        std::vector<HashNode<Key, Value> *> oldTable = std::move(table);
+        table = std::vector<HashNode<Key, Value> *>(capacity, nullptr);
+        size = 0;
+
+        for (auto& node : oldTable) {
+
+            while (node != nullptr) {
+                insert(node->key, node->value);
+                HashNode<Key, Value> *nextNode = node->next;
+                delete node;
+                node = nextNode;
+            }
+        }
+
+    }
+
 public:
-    explicit HashTable(const size_t capacity = 10) : capacity(capacity), size(0) {
+    explicit HashTable(const size_t capacity = 10, double maxLoadFactor = 5.0) :
+    capacity(capacity), size(0), load_factor(maxLoadFactor) {
         table.resize(capacity,nullptr);
     }
 
@@ -56,6 +76,10 @@ public:
                 table[index] = newNode;
             }
             size++;
+        }
+
+        if (static_cast<double>(size) / capacity > load_factor) {
+            rehash();
         }
     }
 

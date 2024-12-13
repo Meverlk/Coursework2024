@@ -2,6 +2,8 @@
 #include <string>
 
 #include "InvertedIndex/HashTable.h"
+#include "InvertedIndex/InvertedIndex.h"
+#include "InvertedIndex/Database/Database.h"
 
 void hashTableTest() {
     HashTable<std::string, int> hashTable;
@@ -26,8 +28,24 @@ void hashTableTest() {
     }
 }
 
+void InvertedIndexTest() {
+    Database database;
+    database.addDocumentsFromDirectory("../Data/test/neg");
+    InvertedIndex invertedIndex(database);
+    invertedIndex.buildIndex();
+    auto result = invertedIndex.search("before");
+    for (auto res : result) {
+        Document document;
+        if (database.getDocumentById(res, document)) {
+            std::cout << document.name << std::endl << document.content << std::endl;
+        } else {
+            std::cout << "Id not found" << std::endl;
+        }
+    }
+}
+
 int main()
 {
-    hashTableTest();
+    InvertedIndexTest();
     return 0;
 }
