@@ -4,3 +4,5 @@ project(Client)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(Client main.cpp)
+
+target_link_libraries(Client ws2_32.lib)
