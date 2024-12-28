@@ -131,6 +131,8 @@ int startServer() {
     ThreadPool pool;
     pool.initialize(6);
 
+    std::thread input(inputThread);
+
     while(running.load()) {
         SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
         if (clientSocket == INVALID_SOCKET) {
@@ -144,6 +146,7 @@ int startServer() {
 
     closesocket(serverSocket);
     pool.terminate();
+    input.join();
 
     WSACleanup();
 }
@@ -176,7 +179,7 @@ void InvertedIndexTest() {
     database.addDocumentsFromDirectory("../Data/test/neg");
     InvertedIndex invertedIndex(database);
     invertedIndex.buildIndex();
-    auto result = invertedIndex.search("before");
+    auto result = invertedIndex.search("character");
     for (auto res : result) {
         Document document;
         if (database.getDocumentById(res, document)) {
