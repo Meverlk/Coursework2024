@@ -23,12 +23,26 @@ void inputThread() {
     }
 }
 
-// Формування JSON відповіді
+
+// Функція для екранування лапок у рядках
+std::string escapeQuotes(const std::string& str) {
+    std::string escaped;
+    for (char ch : str) {
+        if (ch == '"') {
+            escaped += "\\\"";  // Додаємо екрановані лапки
+        } else {
+            escaped += ch;  // Додаємо інші символи без змін
+        }
+    }
+    return escaped;
+}
+
+// Формування JSON відповіді з екрануванням лапок
 std::string createJsonResponse(const std::vector<std::string>& results) {
     std::ostringstream json;
     json << "{ \"results\": [";
     for (size_t i = 0; i < results.size(); ++i) {
-        json << "\"" << results[i] << "\"";
+        json << "\"" << escapeQuotes(results[i]) << "\"";
         if (i != results.size() - 1) {
             json << ", ";
         }
