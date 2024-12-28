@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 50%; margin: 0 auto; text-align: center; }
+        input { padding: 10px; width: 80%; }
+        button { padding: 10px; margin-top: 10px; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search for Files</h1>
+        <input type="text" id="query" placeholder="Enter search query" />
+        <button onclick="sendQuery()">Search</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function sendQuery() {
+            const query = document.getElementById('query').value;
+            if (!query) {
+                alert("Please enter a query");
+                return;
+            }
+
+            fetch(`/search?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(result => {
+                            const p = document.createElement('p');
+                            p.textContent = result;
+                            resultsDiv.appendChild(p);
+                        });
+                    } else {
+                        resultsDiv.textContent = "No results found.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
+        }
+    </script>
+</body>
+</html>
