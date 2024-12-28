@@ -4,6 +4,7 @@
 #include "InvertedIndex/HashTable.h"
 #include "InvertedIndex/InvertedIndex.h"
 #include "InvertedIndex/Database/Database.h"
+#include "ThreadPool/ThreadPool.h"
 
 void hashTableTest() {
     HashTable<std::string, int> hashTable;
@@ -44,8 +45,26 @@ void InvertedIndexTest() {
     }
 }
 
+
+void testThreadPool() {
+    ThreadPool pool;
+    pool.initialize(4);
+
+    auto task = [](int id, int delaySeconds) {
+        std::this_thread::sleep_for(std::chrono::seconds(delaySeconds));
+        std::cout << "Task " << id << " completed after " << delaySeconds << " seconds\n";
+    };
+    for (int i = 0; i < 10; ++i) {
+        pool.addTask(task, i, i % 5 + 1); // ID задачі та затримка від 1 до 5 секунд
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+
+    pool.terminate();
+}
+
 int main()
 {
-    InvertedIndexTest();
+    testThreadPool();
     return 0;
 }

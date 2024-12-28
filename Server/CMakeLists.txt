@@ -15,4 +15,6 @@ add_executable(Server main.cpp
         InvertedIndex/InvertedIndex.cpp
         InvertedIndex/InvertedIndex.h
         ThreadPool/TaskQueue.cpp
-        ThreadPool/TaskQueue.h)
+        ThreadPool/TaskQueue.h
+        ThreadPool/ThreadPool.cpp
+        ThreadPool/ThreadPool.h)
