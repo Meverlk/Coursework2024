@@ -5,6 +5,7 @@
 #include "InvertedIndex/InvertedIndex.h"
 #include "InvertedIndex/Database/Database.h"
 #include "ThreadPool/ThreadPool.h"
+#include "JSONCreation.h"
 
 #define PORT 8080
 
@@ -30,34 +31,6 @@ void updateIndex(InvertedIndex& index) {
         if (!running) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
-}
-
-
-// Функція для екранування лапок у рядках
-std::string escapeQuotes(const std::string& str) {
-    std::string escaped;
-    for (char ch : str) {
-        if (ch == '"') {
-            escaped += "\\\"";  // Додаємо екрановані лапки
-        } else {
-            escaped += ch;  // Додаємо інші символи без змін
-        }
-    }
-    return escaped;
-}
-
-// Формування JSON відповіді з екрануванням лапок
-std::string createJsonResponse(const std::vector<std::string>& results) {
-    std::ostringstream json;
-    json << "{ \"results\": [";
-    for (size_t i = 0; i < results.size(); ++i) {
-        json << "\"" << escapeQuotes(results[i]) << "\"";
-        if (i != results.size() - 1) {
-            json << ", ";
-        }
-    }
-    json << "] }";
-    return json.str();
 }
 
 // Обробка клієнтського запиту
@@ -106,7 +79,6 @@ void handleClient(SOCKET clientSocket, InvertedIndex& invertedIndex, Database& d
         }
     }
 
-    // Закриття сокету
     closesocket(clientSocket);
 }
 

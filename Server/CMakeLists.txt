@@ -17,6 +17,7 @@ add_executable(Server main.cpp
         ThreadPool/TaskQueue.cpp
         ThreadPool/TaskQueue.h
         ThreadPool/ThreadPool.cpp
-        ThreadPool/ThreadPool.h)
+        ThreadPool/ThreadPool.h
+        JSONCreation.h)
 
 target_link_libraries(Server ws2_32.lib)
