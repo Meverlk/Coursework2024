@@ -58,6 +58,11 @@ public:
         std::lock_guard lock(mutex);
         return documents;
     }
+
+    size_t getSize() const {
+        std::lock_guard lock(mutex);
+        return documents.size();
+    }
 };
 
 

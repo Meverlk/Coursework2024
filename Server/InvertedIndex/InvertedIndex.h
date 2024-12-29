@@ -15,6 +15,7 @@ class InvertedIndex {
 private:
     ThreadSafeHashTable<std::string, std::unordered_set<int>> index;
     Database& documentManager;
+    size_t lastDatabaseSize;
 
     void indexDocument(const Document& document) {
         std::istringstream stream(document.content);
@@ -25,12 +26,16 @@ private:
     }
 
 public:
-    InvertedIndex(Database& docManager) : documentManager(docManager) {}
+    InvertedIndex(Database& docManager) : documentManager(docManager), lastDatabaseSize(0) {}
 
     void buildIndex() {
-        auto documents = documentManager.getAllDocuments();
-        for (const auto& document : documents) {
-            indexDocument(document);
+        size_t size = documentManager.getSize();
+        if (size > lastDatabaseSize) {
+            auto documents = documentManager.getAllDocuments();
+            for (size_t i = lastDatabaseSize; i < size; i++) {
+                indexDocument(documents[i]);
+            }
+            lastDatabaseSize = size;
         }
     }
 

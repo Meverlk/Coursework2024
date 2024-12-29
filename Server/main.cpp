@@ -2,7 +2,6 @@
 #include <string>
 #include <winsock2.h>
 
-#include "InvertedIndex/HashTable.h"
 #include "InvertedIndex/InvertedIndex.h"
 #include "InvertedIndex/Database/Database.h"
 #include "ThreadPool/ThreadPool.h"
@@ -20,6 +19,16 @@ void inputThread() {
             running.store(false);
             break;
         }
+    }
+}
+
+void updateIndex(InvertedIndex& index) {
+    while (running) {
+        std::cout << "Updating index..." << std::endl;
+        index.buildIndex();
+        std::cout << "Index updated" << std::endl;
+        if (!running) break;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
 
@@ -102,11 +111,6 @@ void handleClient(SOCKET clientSocket, InvertedIndex& invertedIndex, Database& d
 }
 
 int startServer() {
-    Database database;
-    database.addDocumentsFromDirectory("../Data/test/neg");
-    InvertedIndex invertedIndex(database);
-    invertedIndex.buildIndex();
-
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cerr << "WSAStartup failed. " << WSAGetLastError() << std::endl;
@@ -140,12 +144,22 @@ int startServer() {
         return -1;
     }
 
-    std::cout << "Server started. Waiting for connections..." << std::endl;
-
     ThreadPool pool;
     pool.initialize(6);
 
+    Database database;
+    pool.addTask(std::bind(&Database::addDocumentsFromDirectory, &database, "../Data/test/neg"));
+    pool.addTask(std::bind(&Database::addDocumentsFromDirectory, &database, "../Data/test/pos"));
+    pool.addTask(std::bind(&Database::addDocumentsFromDirectory, &database, "../Data/train/neg"));
+    pool.addTask(std::bind(&Database::addDocumentsFromDirectory, &database, "../Data/train/pos"));
+    pool.addTask(std::bind(&Database::addDocumentsFromDirectory, &database, "../Data/train/unsup"));
+
+    InvertedIndex invertedIndex(database);
+    std::thread update(updateIndex, std::ref(invertedIndex));
+
     std::thread input(inputThread);
+
+    std::cout << "Server started. Waiting for connections..." << std::endl;
 
     while(running.load()) {
         SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
@@ -157,35 +171,17 @@ int startServer() {
         }
         pool.addTask(std::bind(&handleClient, clientSocket, std::ref(invertedIndex), std::ref(database)));
     }
+    pool.terminate();
+    if (input.joinable()) input.join();
+    if (update.joinable()) update.join();
 
     closesocket(serverSocket);
-    pool.terminate();
-    input.join();
-
-    WSACleanup();
-}
-
-void hashTableTest() {
-    HashTable<std::string, int> hashTable;
-
-    hashTable.insert("Alice", 25);
-    hashTable.insert("Bob", 30);
-    hashTable.insert("Carol", 35);
-
-    int value;
-    if (hashTable.find("Alice", value)) {
-        std::cout << "Alice: " << value << std::endl;
-    } else {
-        std::cout << "Alice not found" << std::endl;
+    std::cout << "Cleaning up WinSock..." << std::endl;
+    int result = WSACleanup();
+    if (result != 0) {
+        std::cerr << "WSACleanup failed with error: " << WSAGetLastError() << std::endl;
     }
-
-    hashTable.remove("Bob");
-
-    if (hashTable.find("Bob", value)) {
-        std::cout << "Bob: " << value << std::endl;
-    } else {
-        std::cout << "Bob not found" << std::endl;
-    }
+    std::cout << "WinSock cleaned up successfully." << std::endl;
 }
 
 void InvertedIndexTest() {
