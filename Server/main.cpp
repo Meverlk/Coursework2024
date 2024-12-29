@@ -176,47 +176,8 @@ int startServer() {
     if (update.joinable()) update.join();
 
     closesocket(serverSocket);
-    std::cout << "Cleaning up WinSock..." << std::endl;
-    int result = WSACleanup();
-    if (result != 0) {
-        std::cerr << "WSACleanup failed with error: " << WSAGetLastError() << std::endl;
-    }
-    std::cout << "WinSock cleaned up successfully." << std::endl;
-}
-
-void InvertedIndexTest() {
-    Database database;
-    database.addDocumentsFromDirectory("../Data/test/neg");
-    InvertedIndex invertedIndex(database);
-    invertedIndex.buildIndex();
-    auto result = invertedIndex.search("character");
-    for (auto res : result) {
-        Document document;
-        if (database.getDocumentById(res, document)) {
-            std::cout << document.name << std::endl << document.content << std::endl;
-        } else {
-            std::cout << "Id not found" << std::endl;
-        }
-    }
-}
-
-
-void testThreadPool() {
-    ThreadPool pool;
-    pool.initialize(4);
-
-    auto task = [](int id, int delaySeconds) {
-        std::this_thread::sleep_for(std::chrono::seconds(delaySeconds));
-        std::cout << "Task " << id << " completed after " << delaySeconds << " seconds\n";
-    };
-
-    for (int i = 0; i < 10; ++i) {
-        pool.addTask(task, i, i % 5 + 1); // ID задачі та затримка від 1 до 5 секунд
-    }
-
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-
-    pool.terminate();
+    WSACleanup();
+    return 0;
 }
 
 int main() {
