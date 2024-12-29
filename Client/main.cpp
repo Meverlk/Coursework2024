@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <sstream>
 #include <winsock2.h>
 #include <string>
 
@@ -73,9 +75,58 @@ void cleanup(SOCKET clientSocket) {
     WSACleanup();
 }
 
+
+// Метод для розпакування JSON
+std::vector<std::string> parseJsonToVector(const std::string& json) {
+    std::vector<std::string> results;
+    size_t start = json.find("\"results\": [");
+    if (start == std::string::npos) {
+        std::cerr << "Invalid JSON format: no 'results' field found." << std::endl;
+        return results;
+    }
+
+    start += 11; // Зсув на початок масиву
+    size_t end = json.find("]", start);
+    if (end == std::string::npos) {
+        std::cerr << "Invalid JSON format: no closing ']' found for 'results'." << std::endl;
+        return results;
+    }
+
+    std::string arrayContent = json.substr(start, end - start);
+    bool inString = false;
+    bool quoted = false;
+    std::string currentString;
+
+    for (char ch : arrayContent) {
+        if (ch == '\"' && !quoted) {
+            inString = !inString;
+
+            if (!inString) { // Кінець рядка
+                results.push_back(currentString);
+                currentString.clear();
+            }
+        } else if (inString) {
+            quoted = false;
+            if (ch == '\\') { // Екранування
+                quoted = true;
+                continue;
+            }
+            currentString += ch;
+        }
+    }
+
+    return results;
+}
+
+void printVector(const std::vector<std::string>& vec) {
+    for (const auto& str : vec) {
+        std::cout << str << std::endl << std::endl;
+    }
+}
+
 int main() {
-    const std::string serverAddress = "127.0.0.1"; // Замініть на адресу вашого сервера
-    const int port = 8080;                         // Замініть на порт вашого сервера
+    const std::string serverAddress = "127.0.0.1";
+    const int port = 8080;
 
     initializeWinsock();
     SOCKET clientSocket = createSocket(serverAddress, port);
@@ -91,7 +142,8 @@ int main() {
     sendRequest(clientSocket, httpRequest);
     std::string response = receiveResponse(clientSocket);
 
-    std::cout << "Server response:\n" << response << std::endl;
+    auto parsedResponse = parseJsonToVector(response);
+    printVector(parsedResponse);
 
     cleanup(clientSocket);
     return 0;
