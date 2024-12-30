@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <winsock2.h>
+#include <chrono>
 
 #include "InvertedIndex/InvertedIndex.h"
 #include "InvertedIndex/Database/Database.h"
@@ -152,7 +153,34 @@ int startServer() {
     return 0;
 }
 
+using std::chrono::nanoseconds;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+
+void invertedIndexTest() {
+    Database database;
+    database.addDocumentsFromDirectory("../Data/test/neg");
+    database.addDocumentsFromDirectory("../Data/test/pos");
+    database.addDocumentsFromDirectory("../Data/train/neg");
+    database.addDocumentsFromDirectory("../Data/train/pos");
+    database.addDocumentsFromDirectory("../Data/train/unsup");
+
+    int threadsNum[] = {1, 2, 4, 6, 8, 12, 20, 40, 60, 80};
+
+    for (auto threadNum : threadsNum) {
+        InvertedIndex invertedIndex(database);
+
+        auto building_begin = high_resolution_clock::now();
+        invertedIndex.buildIndex(threadNum);
+        auto building_end = high_resolution_clock::now();
+
+        auto elapsed = duration_cast<nanoseconds>(building_end - building_begin);
+        std::printf("Threads: %d, Time: %.3f seconds.\n", threadNum, elapsed.count() * 1e-9);
+    }
+}
+
 int main() {
     startServer();
+    //invertedIndexTest();
     return 0;
 }
